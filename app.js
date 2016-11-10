@@ -1,15 +1,21 @@
 'use strict';
 
 const fs = require('fs');
-const path_file = 'font-awesome.txt';
+const input = 'font-awesome.txt';
 const output = 'output.txt';
 
-var lineReader = require('readline').createInterface({
-    input: fs.createReadStream(path_file)
-});
+fs.writeFileSync(output, '');
 
-lineReader.on('line', function (line) {
-    var arr = line.split(':');
+var lineByLine = require('n-readlines');
+var liner = new lineByLine(input);
+
+var line;
+var lineNumber = 0;
+var fonts = [];
+while (line = liner.next()) {
+    var l = line.toString();
+
+    var arr = l.split(':');
     var _class = arr[0];
     _class = _class.replace('$', '');
     _class = _class.replace('var-', '');
@@ -19,7 +25,12 @@ lineReader.on('line', function (line) {
     code = code.replace('";', '');
     code = code.replace('"\\', '');
 
-    var item = `'fa-${code}' => '${_class}',`;
+    if (fonts.indexOf(code) === -1) {
+        fonts.push(code);
 
-    fs.appendFileSync(output, item + "\n");
-});
+        var item = `'fa-${code}' => '${_class}',`;
+        fs.appendFileSync(output, item + "\n");
+    }
+
+    lineNumber++;
+}
